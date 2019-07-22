@@ -3,6 +3,7 @@ import {makeStyles} from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import axios from 'axios';
 
 const useStyles = makeStyles(theme => ({
@@ -10,6 +11,10 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
         maxWidth: 360,
         backgroundColor: theme.palette.background.paper,
+        marginBottom:20
+
+    },
+    list:{
     },
     listItem: {
         color: '#303030'
@@ -19,32 +24,49 @@ const useStyles = makeStyles(theme => ({
 
 export default function SimpleList() {
     const classes = useStyles();
-    const [data, setData] = useState({hits: []});
+    const [data, setData] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    useEffect(
-        async () => {
-        const result = await axios(
-            'http://hn.algolia.com/api/v1/search?query=redux',
-        );
 
-        setData(result.data);
-    }, []);
+    useEffect(() => {
+
+            async function fetchData() {
+                setLoading(true);
+                const result = await axios(
+                    'https://jsonplaceholder.typicode.com/users'
+                );
+                setData(result.data);
+                setLoading(false);
+
+            }
+
+            fetchData();
+        }
+
+        , []);
 
     return (
         <div className={classes.root}>
-            <List component="nav" aria-label="Main mailbox folders">
-                {
-                    data.hits.map(item => (
-                        <li key={item.objectID}>
-                            <a href={item.url}>{item.title}</a>
-                        </li>
-                    ))}
+            <List
+                className={classes.list}
+                component="nav"
 
-                <ListItem button>
-                    <ListItemText className={classes.listItem}>
-                        text
-                    </ListItemText>
-                </ListItem>
+            >
+                {
+                    !loading ?
+                    data.map(item => (
+                        <ListItem button
+                                  key={item.id}>
+                            <ListItemText className={classes.listItem}>
+                                {item.name}
+                            </ListItemText>
+                        </ListItem>
+                    ))
+                        :
+                        <CircularProgress
+                            thickness={10}
+                        />
+                }
             </List>
         </div>
     );
